@@ -1,12 +1,11 @@
 package agent
 
 import (
-    "context"
-
-    "google.golang.org/grpc"
-    "google.golang.org/grpc/credentials/insecure"
-
-    pb "starless/kadath/gen/proto"
+	"fmt"
+	"context"
+  "google.golang.org/grpc"
+	pb "starless/kadath/gen/proto"
+	"starless/kadath/internal/utils"
 )
 
 type Agent struct {
@@ -15,8 +14,8 @@ type Agent struct {
     agentID     string
 }
 
-func NewAgent(serverAddr, connectorID, agentID string) (*Agent, error) {
-    conn, err := grpc.NewClient(serverAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func NewAgent(serverAddr string, connectorID string) (*Agent, error) {
+    conn, err := grpc.Dial(serverAddr, grpc.WithInsecure())
     if err != nil {
         return nil, err
     }
@@ -24,7 +23,7 @@ func NewAgent(serverAddr, connectorID, agentID string) (*Agent, error) {
     return &Agent{
         client:      pb.NewSqlRunnerClient(conn),
         connectorID: connectorID,
-        agentID:     agentID,
+        agentID:     fmt.Sprintf("%s.%s", utils.GetHostname(), utils.RandomUUID()),
     }, nil
 }
 

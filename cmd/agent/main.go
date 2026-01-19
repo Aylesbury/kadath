@@ -1,16 +1,25 @@
 package main
 
 import (
+	"log/slog"
 	"context"
 	"starless/kadath/internal/agent"
+	"starless/kadath/configs"
 )
 
 func main() {
+	cfg, err := configs.LoadConfig()
+	if err != nil {
+		panic(err)
+	}
+	logger := slog.Default()
 	ctx := context.Background()
-	a, err := agent.NewAgent("localhost:9001", "test-connector", "test-agent")
+
+	logger.Info("Running Agent", "connector_id", cfg.ConnectorId)
+	client, err := agent.NewAgent("localhost:9001", cfg.ConnectorId)
 	if err != nil {
 		panic(err)
 	}
 
-	a.SendHeartbeat(ctx)
+	client.SendHeartbeat(ctx)
 }

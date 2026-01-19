@@ -5,14 +5,14 @@ import (
 )
 
 type Config struct {
-
+	ConnectorId	string	`envconfig:"CONNECTOR_ID"`
 }
 
 
 func readEnv() (*Config, error) {
-        var cfg Config
-        err := envconfig.Process("", &cfg)
-        return &cfg, err
+	var cfg Config
+	err := envconfig.Process("", &cfg)
+	return &cfg, err
 }
 
 
