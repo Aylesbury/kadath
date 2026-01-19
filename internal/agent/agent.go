@@ -14,10 +14,10 @@ type Agent struct {
     agentID     string
 }
 
-func NewAgent(serverAddr string, connectorID string) (*Agent, error) {
-    conn, err := grpc.Dial(serverAddr, grpc.WithInsecure())
+func NewAgent(ctx context.Context, serverAddr string, connectorID string) (*Agent, error) {
+    conn, err := grpc.DialContext(ctx, serverAddr, grpc.WithInsecure(), grpc.WithBlock())
     if err != nil {
-        return nil, err
+        return nil, fmt.Errorf("failed to connect to %s: %w", serverAddr, err)
     }
 
     return &Agent{

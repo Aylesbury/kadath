@@ -16,10 +16,14 @@ func main() {
 	ctx := context.Background()
 
 	logger.Info("Running Agent", "connector_id", cfg.ConnectorId)
-	client, err := agent.NewAgent("localhost:9001", cfg.ConnectorId)
+	client, err := agent.NewAgent(ctx, "localhost:9001", cfg.ConnectorId)
 	if err != nil {
 		panic(err)
 	}
 
-	client.SendHeartbeat(ctx)
+	if err := client.SendHeartbeat(ctx); err != nil {
+		logger.Error("Failed to send heartbeat", "error", err)
+	} else {
+		logger.Info("Heartbeat sent successfully")
+	}
 }
