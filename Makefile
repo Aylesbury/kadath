@@ -1,5 +1,8 @@
 lint:
-			golangci-lint run
+	golangci-lint run
+
+build:
+	go build -o bin/agent cmd/agent/main.go
 
 # Requires:
 # go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
