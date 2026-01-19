@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package sql.v1;
+
+option go_package = "./sql_runner";
+
+service SqlRunner {
+  // Agent requests a job to process
+  rpc GetJob (GetJobRequest) returns (GetJobResponse);
+  
+  // Agent reports result
+  rpc UpdateJob (UpdateJobRequest) returns (UpdateJobResponse);
+
+  // Agent sends heartbeat
+  rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse);
+}
+
+message HeartbeatRequest {
+  string connector_id = 1;
+  string agent_id = 2;
+}
+
+message HeartbeatResponse {
+  bool success = 1;
+}
+
+message GetJobRequest {
+  string tenant_id = 1;
+  repeated string supported_kinds = 2;
+  string agent_id = 3;
+}
+
+message GetJobResponse {
+  bool has_job = 1;
+  Job job = 2;
+}
+
+message Job {
+  string id = 1;
+  string kind = 2;
+  string payload_json = 3;
+}
+
+message UpdateJobRequest {
+  string job_id = 1;
+  string agent_id = 2;
+  bool success = 3;
+  string result_json = 4;
+  string error_message = 5;
+}
+
+message UpdateJobResponse {
+  bool success = 1;
+}
+
