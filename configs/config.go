@@ -6,6 +6,7 @@ import (
 
 type Config struct {
 	ConnectorId	string	`envconfig:"CONNECTOR_ID"`
+	AuthToken	string	`envconfig:"AUTH_TOKEN"`
 }
 
 

@@ -23,8 +23,7 @@ const (
 
 type HeartbeatRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ConnectorId   string                 `protobuf:"bytes,1,opt,name=connector_id,json=connectorId,proto3" json:"connector_id,omitempty"`
-	AgentId       string                 `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	AgentId       string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -57,13 +56,6 @@ func (x *HeartbeatRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use HeartbeatRequest.ProtoReflect.Descriptor instead.
 func (*HeartbeatRequest) Descriptor() ([]byte, []int) {
 	return file_proto_sql_runner_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *HeartbeatRequest) GetConnectorId() string {
-	if x != nil {
-		return x.ConnectorId
-	}
-	return ""
 }
 
 func (x *HeartbeatRequest) GetAgentId() string {
@@ -119,9 +111,8 @@ func (x *HeartbeatResponse) GetSuccess() bool {
 
 type GetJobRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
-	TenantId       string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
-	SupportedKinds []string               `protobuf:"bytes,2,rep,name=supported_kinds,json=supportedKinds,proto3" json:"supported_kinds,omitempty"`
-	AgentId        string                 `protobuf:"bytes,3,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	SupportedKinds []string               `protobuf:"bytes,1,rep,name=supported_kinds,json=supportedKinds,proto3" json:"supported_kinds,omitempty"`
+	AgentId        string                 `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -154,13 +145,6 @@ func (x *GetJobRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetJobRequest.ProtoReflect.Descriptor instead.
 func (*GetJobRequest) Descriptor() ([]byte, []int) {
 	return file_proto_sql_runner_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *GetJobRequest) GetTenantId() string {
-	if x != nil {
-		return x.TenantId
-	}
-	return ""
 }
 
 func (x *GetJobRequest) GetSupportedKinds() []string {
@@ -413,16 +397,14 @@ var File_proto_sql_runner_proto protoreflect.FileDescriptor
 
 const file_proto_sql_runner_proto_rawDesc = "" +
 	"\n" +
-	"\x16proto/sql_runner.proto\x12\x06sql.v1\"P\n" +
-	"\x10HeartbeatRequest\x12!\n" +
-	"\fconnector_id\x18\x01 \x01(\tR\vconnectorId\x12\x19\n" +
-	"\bagent_id\x18\x02 \x01(\tR\aagentId\"-\n" +
+	"\x16proto/sql_runner.proto\x12\x06sql.v1\"-\n" +
+	"\x10HeartbeatRequest\x12\x19\n" +
+	"\bagent_id\x18\x01 \x01(\tR\aagentId\"-\n" +
 	"\x11HeartbeatResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"p\n" +
-	"\rGetJobRequest\x12\x1b\n" +
-	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12'\n" +
-	"\x0fsupported_kinds\x18\x02 \x03(\tR\x0esupportedKinds\x12\x19\n" +
-	"\bagent_id\x18\x03 \x01(\tR\aagentId\"H\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"S\n" +
+	"\rGetJobRequest\x12'\n" +
+	"\x0fsupported_kinds\x18\x01 \x03(\tR\x0esupportedKinds\x12\x19\n" +
+	"\bagent_id\x18\x02 \x01(\tR\aagentId\"H\n" +
 	"\x0eGetJobResponse\x12\x17\n" +
 	"\ahas_job\x18\x01 \x01(\bR\x06hasJob\x12\x1d\n" +
 	"\x03job\x18\x02 \x01(\v2\v.sql.v1.JobR\x03job\"L\n" +

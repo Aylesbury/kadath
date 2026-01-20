@@ -16,7 +16,7 @@ func main() {
 	ctx := context.Background()
 
 	logger.Info("Running Agent", "connector_id", cfg.ConnectorId)
-	client, err := agent.NewAgent(ctx, "localhost:9001", cfg.ConnectorId)
+	client, err := agent.NewAgent(ctx, "localhost:9001", cfg.ConnectorId, cfg.AuthToken)
 	if err != nil {
 		panic(err)
 	}

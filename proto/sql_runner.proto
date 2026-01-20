@@ -16,8 +16,7 @@ service SqlRunner {
 }
 
 message HeartbeatRequest {
-  string connector_id = 1;
-  string agent_id = 2;
+  string agent_id = 1;
 }
 
 message HeartbeatResponse {
@@ -25,9 +24,8 @@ message HeartbeatResponse {
 }
 
 message GetJobRequest {
-  string tenant_id = 1;
-  repeated string supported_kinds = 2;
-  string agent_id = 3;
+  repeated string supported_kinds = 1;
+  string agent_id = 2;
 }
 
 message GetJobResponse {
@@ -52,4 +50,3 @@ message UpdateJobRequest {
 message UpdateJobResponse {
   bool success = 1;
 }
-
