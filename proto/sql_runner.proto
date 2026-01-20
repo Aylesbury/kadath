@@ -7,12 +7,21 @@ option go_package = "./sql_runner";
 service SqlRunner {
   // Agent requests a job to process
   rpc GetJob (GetJobRequest) returns (GetJobResponse);
-  
+
   // Agent reports result
   rpc UpdateJob (UpdateJobRequest) returns (UpdateJobResponse);
 
   // Agent sends heartbeat
   rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse);
+}
+
+enum JobKind {
+  JOB_KIND_UNSPECIFIED = 0;
+  JOB_KIND_PING = 1;
+  JOB_KIND_QUERY = 2;
+  JOB_KIND_DSL_QUERY = 3;
+  JOB_KIND_SCHEMA_REFRESH = 4;
+  JOB_KIND_FETCH_COLUMNS = 5;
 }
 
 message HeartbeatRequest {
@@ -24,7 +33,7 @@ message HeartbeatResponse {
 }
 
 message GetJobRequest {
-  repeated string supported_kinds = 1;
+  repeated JobKind supported_kinds = 1;
   string agent_id = 2;
 }
 
@@ -35,7 +44,7 @@ message GetJobResponse {
 
 message Job {
   string id = 1;
-  string kind = 2;
+  JobKind kind = 2;
   string payload_json = 3;
 }
 

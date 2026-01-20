@@ -21,6 +21,64 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type JobKind int32
+
+const (
+	JobKind_JOB_KIND_UNSPECIFIED    JobKind = 0
+	JobKind_JOB_KIND_PING           JobKind = 1
+	JobKind_JOB_KIND_QUERY          JobKind = 2
+	JobKind_JOB_KIND_DSL_QUERY      JobKind = 3
+	JobKind_JOB_KIND_SCHEMA_REFRESH JobKind = 4
+	JobKind_JOB_KIND_FETCH_COLUMNS  JobKind = 5
+)
+
+// Enum value maps for JobKind.
+var (
+	JobKind_name = map[int32]string{
+		0: "JOB_KIND_UNSPECIFIED",
+		1: "JOB_KIND_PING",
+		2: "JOB_KIND_QUERY",
+		3: "JOB_KIND_DSL_QUERY",
+		4: "JOB_KIND_SCHEMA_REFRESH",
+		5: "JOB_KIND_FETCH_COLUMNS",
+	}
+	JobKind_value = map[string]int32{
+		"JOB_KIND_UNSPECIFIED":    0,
+		"JOB_KIND_PING":           1,
+		"JOB_KIND_QUERY":          2,
+		"JOB_KIND_DSL_QUERY":      3,
+		"JOB_KIND_SCHEMA_REFRESH": 4,
+		"JOB_KIND_FETCH_COLUMNS":  5,
+	}
+)
+
+func (x JobKind) Enum() *JobKind {
+	p := new(JobKind)
+	*p = x
+	return p
+}
+
+func (x JobKind) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (JobKind) Descriptor() protoreflect.EnumDescriptor {
+	return file_proto_sql_runner_proto_enumTypes[0].Descriptor()
+}
+
+func (JobKind) Type() protoreflect.EnumType {
+	return &file_proto_sql_runner_proto_enumTypes[0]
+}
+
+func (x JobKind) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use JobKind.Descriptor instead.
+func (JobKind) EnumDescriptor() ([]byte, []int) {
+	return file_proto_sql_runner_proto_rawDescGZIP(), []int{0}
+}
+
 type HeartbeatRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AgentId       string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
@@ -111,7 +169,7 @@ func (x *HeartbeatResponse) GetSuccess() bool {
 
 type GetJobRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
-	SupportedKinds []string               `protobuf:"bytes,1,rep,name=supported_kinds,json=supportedKinds,proto3" json:"supported_kinds,omitempty"`
+	SupportedKinds []JobKind              `protobuf:"varint,1,rep,packed,name=supported_kinds,json=supportedKinds,proto3,enum=sql.v1.JobKind" json:"supported_kinds,omitempty"`
 	AgentId        string                 `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
@@ -147,7 +205,7 @@ func (*GetJobRequest) Descriptor() ([]byte, []int) {
 	return file_proto_sql_runner_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *GetJobRequest) GetSupportedKinds() []string {
+func (x *GetJobRequest) GetSupportedKinds() []JobKind {
 	if x != nil {
 		return x.SupportedKinds
 	}
@@ -216,7 +274,7 @@ func (x *GetJobResponse) GetJob() *Job {
 type Job struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Kind          string                 `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
+	Kind          JobKind                `protobuf:"varint,2,opt,name=kind,proto3,enum=sql.v1.JobKind" json:"kind,omitempty"`
 	PayloadJson   string                 `protobuf:"bytes,3,opt,name=payload_json,json=payloadJson,proto3" json:"payload_json,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -259,11 +317,11 @@ func (x *Job) GetId() string {
 	return ""
 }
 
-func (x *Job) GetKind() string {
+func (x *Job) GetKind() JobKind {
 	if x != nil {
 		return x.Kind
 	}
-	return ""
+	return JobKind_JOB_KIND_UNSPECIFIED
 }
 
 func (x *Job) GetPayloadJson() string {
@@ -401,16 +459,16 @@ const file_proto_sql_runner_proto_rawDesc = "" +
 	"\x10HeartbeatRequest\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\"-\n" +
 	"\x11HeartbeatResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"S\n" +
-	"\rGetJobRequest\x12'\n" +
-	"\x0fsupported_kinds\x18\x01 \x03(\tR\x0esupportedKinds\x12\x19\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"d\n" +
+	"\rGetJobRequest\x128\n" +
+	"\x0fsupported_kinds\x18\x01 \x03(\x0e2\x0f.sql.v1.JobKindR\x0esupportedKinds\x12\x19\n" +
 	"\bagent_id\x18\x02 \x01(\tR\aagentId\"H\n" +
 	"\x0eGetJobResponse\x12\x17\n" +
 	"\ahas_job\x18\x01 \x01(\bR\x06hasJob\x12\x1d\n" +
-	"\x03job\x18\x02 \x01(\v2\v.sql.v1.JobR\x03job\"L\n" +
+	"\x03job\x18\x02 \x01(\v2\v.sql.v1.JobR\x03job\"]\n" +
 	"\x03Job\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04kind\x18\x02 \x01(\tR\x04kind\x12!\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12#\n" +
+	"\x04kind\x18\x02 \x01(\x0e2\x0f.sql.v1.JobKindR\x04kind\x12!\n" +
 	"\fpayload_json\x18\x03 \x01(\tR\vpayloadJson\"\xa4\x01\n" +
 	"\x10UpdateJobRequest\x12\x15\n" +
 	"\x06job_id\x18\x01 \x01(\tR\x05jobId\x12\x19\n" +
@@ -420,7 +478,14 @@ const file_proto_sql_runner_proto_rawDesc = "" +
 	"resultJson\x12#\n" +
 	"\rerror_message\x18\x05 \x01(\tR\ferrorMessage\"-\n" +
 	"\x11UpdateJobResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xc8\x01\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess*\x9b\x01\n" +
+	"\aJobKind\x12\x18\n" +
+	"\x14JOB_KIND_UNSPECIFIED\x10\x00\x12\x11\n" +
+	"\rJOB_KIND_PING\x10\x01\x12\x12\n" +
+	"\x0eJOB_KIND_QUERY\x10\x02\x12\x16\n" +
+	"\x12JOB_KIND_DSL_QUERY\x10\x03\x12\x1b\n" +
+	"\x17JOB_KIND_SCHEMA_REFRESH\x10\x04\x12\x1a\n" +
+	"\x16JOB_KIND_FETCH_COLUMNS\x10\x052\xc8\x01\n" +
 	"\tSqlRunner\x127\n" +
 	"\x06GetJob\x12\x15.sql.v1.GetJobRequest\x1a\x16.sql.v1.GetJobResponse\x12@\n" +
 	"\tUpdateJob\x12\x18.sql.v1.UpdateJobRequest\x1a\x19.sql.v1.UpdateJobResponse\x12@\n" +
@@ -438,29 +503,33 @@ func file_proto_sql_runner_proto_rawDescGZIP() []byte {
 	return file_proto_sql_runner_proto_rawDescData
 }
 
+var file_proto_sql_runner_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_proto_sql_runner_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_proto_sql_runner_proto_goTypes = []any{
-	(*HeartbeatRequest)(nil),  // 0: sql.v1.HeartbeatRequest
-	(*HeartbeatResponse)(nil), // 1: sql.v1.HeartbeatResponse
-	(*GetJobRequest)(nil),     // 2: sql.v1.GetJobRequest
-	(*GetJobResponse)(nil),    // 3: sql.v1.GetJobResponse
-	(*Job)(nil),               // 4: sql.v1.Job
-	(*UpdateJobRequest)(nil),  // 5: sql.v1.UpdateJobRequest
-	(*UpdateJobResponse)(nil), // 6: sql.v1.UpdateJobResponse
+	(JobKind)(0),              // 0: sql.v1.JobKind
+	(*HeartbeatRequest)(nil),  // 1: sql.v1.HeartbeatRequest
+	(*HeartbeatResponse)(nil), // 2: sql.v1.HeartbeatResponse
+	(*GetJobRequest)(nil),     // 3: sql.v1.GetJobRequest
+	(*GetJobResponse)(nil),    // 4: sql.v1.GetJobResponse
+	(*Job)(nil),               // 5: sql.v1.Job
+	(*UpdateJobRequest)(nil),  // 6: sql.v1.UpdateJobRequest
+	(*UpdateJobResponse)(nil), // 7: sql.v1.UpdateJobResponse
 }
 var file_proto_sql_runner_proto_depIdxs = []int32{
-	4, // 0: sql.v1.GetJobResponse.job:type_name -> sql.v1.Job
-	2, // 1: sql.v1.SqlRunner.GetJob:input_type -> sql.v1.GetJobRequest
-	5, // 2: sql.v1.SqlRunner.UpdateJob:input_type -> sql.v1.UpdateJobRequest
-	0, // 3: sql.v1.SqlRunner.Heartbeat:input_type -> sql.v1.HeartbeatRequest
-	3, // 4: sql.v1.SqlRunner.GetJob:output_type -> sql.v1.GetJobResponse
-	6, // 5: sql.v1.SqlRunner.UpdateJob:output_type -> sql.v1.UpdateJobResponse
-	1, // 6: sql.v1.SqlRunner.Heartbeat:output_type -> sql.v1.HeartbeatResponse
-	4, // [4:7] is the sub-list for method output_type
-	1, // [1:4] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	0, // 0: sql.v1.GetJobRequest.supported_kinds:type_name -> sql.v1.JobKind
+	5, // 1: sql.v1.GetJobResponse.job:type_name -> sql.v1.Job
+	0, // 2: sql.v1.Job.kind:type_name -> sql.v1.JobKind
+	3, // 3: sql.v1.SqlRunner.GetJob:input_type -> sql.v1.GetJobRequest
+	6, // 4: sql.v1.SqlRunner.UpdateJob:input_type -> sql.v1.UpdateJobRequest
+	1, // 5: sql.v1.SqlRunner.Heartbeat:input_type -> sql.v1.HeartbeatRequest
+	4, // 6: sql.v1.SqlRunner.GetJob:output_type -> sql.v1.GetJobResponse
+	7, // 7: sql.v1.SqlRunner.UpdateJob:output_type -> sql.v1.UpdateJobResponse
+	2, // 8: sql.v1.SqlRunner.Heartbeat:output_type -> sql.v1.HeartbeatResponse
+	6, // [6:9] is the sub-list for method output_type
+	3, // [3:6] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_proto_sql_runner_proto_init() }
@@ -473,13 +542,14 @@ func file_proto_sql_runner_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_sql_runner_proto_rawDesc), len(file_proto_sql_runner_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_proto_sql_runner_proto_goTypes,
 		DependencyIndexes: file_proto_sql_runner_proto_depIdxs,
+		EnumInfos:         file_proto_sql_runner_proto_enumTypes,
 		MessageInfos:      file_proto_sql_runner_proto_msgTypes,
 	}.Build()
 	File_proto_sql_runner_proto = out.File
