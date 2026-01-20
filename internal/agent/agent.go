@@ -16,7 +16,7 @@ import (
 
 type NoJobs struct {}
 
-func (e *NoJobs) Error() string {
+func (e NoJobs) Error() string {
 	return "No jobs available"
 }
 

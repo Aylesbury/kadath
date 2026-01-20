@@ -16,6 +16,10 @@ func pollAndProcessJob(ctx context.Context, client *agent.Agent, handler JobHand
 	logger := slog.Default()
 	resp, err := client.GetJob(ctx)
 	if err != nil {
+		if _, ok := err.(*agent.NoJobs); ok {
+			// Ignore it. This is normal case
+			return nil
+		}
 		logger.Error("GetJob failed", "error", err)
 		return err
 	}
