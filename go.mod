@@ -3,8 +3,11 @@ module starless/kadath
 go 1.25.0
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/go-sql-driver/mysql v1.9.3 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0 // indirect
+	github.com/lib/pq v1.10.9 // indirect
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
