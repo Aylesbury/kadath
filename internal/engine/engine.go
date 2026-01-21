@@ -16,6 +16,6 @@ type Engine interface {
 
 // NewEngine creates a new engine instance based on the build tag
 // This function will be implemented by each engine-specific file
-func NewEngine(cfg configs.Config) (Engine, error) {
+func NewEngine(cfg *configs.Config) (Engine, error) {
 	return newEngine(cfg)
 }

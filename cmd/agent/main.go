@@ -4,15 +4,27 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"fmt"
 	"os/signal"
 	"syscall"
 
 	"starless/kadath/configs"
 	"starless/kadath/internal/agent"
 	"starless/kadath/internal/loops"
+	"starless/kadath/internal/engine"
 
 	pb "starless/kadath/gen/proto"
 )
+
+
+func handlePing(ctx context.Context, eng engine.Engine) agent.JobResult {
+		eng.Ping(ctx)
+		return agent.JobResult{
+			Success:      true,
+			ResultJSON:   "{}",
+			ErrorMessage: "",
+		}
+}
 
 
 
@@ -20,11 +32,30 @@ func handleJob(ctx context.Context, client *agent.Agent, job *agent.JobResponse)
 	logger := slog.Default()
 	logger.Info("Handling job", "job_id", job.Id, "kind", job.Kind, "payload", job.Payload)
 
-	// TODO: implement actual job processing
-	return agent.JobResult{
-		Success:      true,
-		ResultJSON:   "{}",
-		ErrorMessage: "",
+	cfg, err := configs.LoadConfig()
+	if err != nil {
+		panic(err)
+	}
+
+	eng, err := engine.NewEngine(cfg)
+
+	if err != nil {
+		return agent.JobResult{
+			Success:      false,
+			ResultJSON:   "{}",
+			ErrorMessage: "Unable to initialize Engine",
+		}
+	}
+
+	switch pb.JobKind(job.Kind) {
+	case pb.JobKind_JOB_KIND_PING: 
+		return handlePing(ctx, eng)
+	default: 
+		return agent.JobResult{
+			Success: false,
+			ResultJSON: "{}",
+			ErrorMessage: fmt.Sprintf("Unhandled Job Kind: %d", job.Kind),
+		}
 	}
 }
 

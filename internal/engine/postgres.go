@@ -15,7 +15,7 @@ type postgresEngine struct {
 	db *sql.DB
 }
 
-func newEngine(cfg configs.Config) (Engine, error) {
+func newEngine(cfg *configs.Config) (Engine, error) {
 	db, err := sql.Open("postgres", cfg.DSN)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open postgres connection: %w", err)

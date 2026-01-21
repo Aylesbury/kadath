@@ -16,7 +16,7 @@ type mysqlEngine struct {
 	db *sql.DB
 }
 
-func newEngine(cfg configs.Config) (Engine, error) {
+func newEngine(cfg *configs.Config) (Engine, error) {
 	db, err := sql.Open("mysql", cfg.DSN)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open mysql connection: %w", err)
