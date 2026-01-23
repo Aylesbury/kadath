@@ -8,6 +8,7 @@ type Config struct {
 	ConnectorId	string	`envconfig:"CONNECTOR_ID"`
 	AuthToken		string	`envconfig:"AUTH_TOKEN"`
 	DSN					string	`envconfig:"DB_URL"`
+	SSLMode			string	`envconfig:"DB_SSLMODE" default:"disable"`
 }
 
 

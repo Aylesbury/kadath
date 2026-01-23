@@ -277,11 +277,55 @@ func TestPostgresBuildCondition(t *testing.T) {
 	}
 }
 
+func TestPostgresBuildDSN(t *testing.T) {
+	tests := []struct {
+		name     string
+		baseDSN  string
+		sslMode  string
+		expected string
+	}{
+		{
+			name:     "add sslmode to simple DSN",
+			baseDSN:  "postgres://user:pass@localhost/dbname",
+			sslMode:  "disable",
+			expected: "postgres://user:pass@localhost/dbname?sslmode=disable",
+		},
+		{
+			name:     "add sslmode to DSN with existing params",
+			baseDSN:  "postgres://user:pass@localhost/dbname?connect_timeout=10",
+			sslMode:  "require",
+			expected: "postgres://user:pass@localhost/dbname?connect_timeout=10&sslmode=require",
+		},
+		{
+			name:     "don't modify DSN with existing sslmode",
+			baseDSN:  "postgres://user:pass@localhost/dbname?sslmode=verify-full",
+			sslMode:  "disable",
+			expected: "postgres://user:pass@localhost/dbname?sslmode=verify-full",
+		},
+		{
+			name:     "handle different sslmode values",
+			baseDSN:  "postgres://localhost/db",
+			sslMode:  "verify-ca",
+			expected: "postgres://localhost/db?sslmode=verify-ca",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := buildDSN(tt.baseDSN, tt.sslMode)
+			if result != tt.expected {
+				t.Errorf("buildDSN() = %v, want %v", result, tt.expected)
+			}
+		})
+	}
+}
+
 func TestPostgresNewEngine(t *testing.T) {
-	// Test that newEngine doesn't panic with invalid DSN
+	// Test that NewEngine doesn't panic with invalid DSN
 	// We can't test actual connection without a real postgres instance
 	cfg := &configs.Config{
-		DSN: "invalid-dsn",
+		DSN:     "invalid-dsn",
+		SSLMode: "disable",
 	}
 
 	_, err := NewEngine(cfg)

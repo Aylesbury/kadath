@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	_ "github.com/lib/pq"
 	"starless/kadath/configs"
@@ -16,8 +17,25 @@ type postgresEngine struct {
 	db *sql.DB
 }
 
+// buildDSN adds SSL mode to the DSN if not already present
+func buildDSN(baseDSN, sslMode string) string {
+	// Check if DSN already contains sslmode parameter
+	if strings.Contains(baseDSN, "sslmode=") {
+		return baseDSN
+	}
+
+	// Add sslmode parameter
+	separator := "?"
+	if strings.Contains(baseDSN, "?") {
+		separator = "&"
+	}
+
+	return fmt.Sprintf("%s%ssslmode=%s", baseDSN, separator, sslMode)
+}
+
 func NewEngine(cfg *configs.Config) (types.Engine, error) {
-	db, err := sql.Open("postgres", cfg.DSN)
+	dsn := buildDSN(cfg.DSN, cfg.SSLMode)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open postgres connection: %w", err)
 	}
