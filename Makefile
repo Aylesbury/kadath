@@ -14,3 +14,12 @@ gen-proto:
 	protoc --go_out=./gen/ --go_opt=paths=source_relative \
     --go-grpc_out=./gen/ --go-grpc_opt=paths=source_relative \
     proto/*.proto
+
+test-postgres:
+	go test -tags postgres -v ./tests/engine/ ./internal/engine/postgres
+
+test-mysql:
+	go test -tags mysql -v ./tests/engine/ ./internal/engine/mysql
+
+unit-test: test-postgres test-mysql
+
