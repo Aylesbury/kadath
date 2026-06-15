@@ -38,8 +38,15 @@ func handlePing(ctx context.Context, eng types.Engine) agent.JobResult {
 func handleDslQuery(ctx context.Context, eng types.Engine, payload map[string]interface{}) agent.JobResult {
 	logger := slog.Default()
 
-	// Convert payload map to JSON string for parsing
-	payloadJSON, err := json.Marshal(payload)
+	// The DSL lives under the "query" key of the job payload. Fall back to the
+	// whole payload for backwards compatibility with older brokers.
+	queryPayload, ok := payload["query"].(map[string]interface{})
+	if !ok {
+		queryPayload = payload
+	}
+
+	// Convert query payload to JSON string for parsing
+	payloadJSON, err := json.Marshal(queryPayload)
 	if err != nil {
 		logger.Error("Failed to marshal payload", "error", err)
 		return agent.JobResult{
@@ -92,16 +99,35 @@ func handleDslQuery(ctx context.Context, eng types.Engine, payload map[string]in
 
 
 
+// resolveConnection picks the database connection for a job. Platform runners
+// receive a per-job "connection" block in the payload (the broker holds the
+// credentials); client runners have none and use their locally-injected config.
+func resolveConnection(cfg *configs.Config, payload map[string]interface{}) *configs.Config {
+	conn, ok := payload["connection"].(map[string]interface{})
+	if !ok {
+		return cfg
+	}
+
+	resolved := *cfg
+	if dsn, ok := conn["dsn"].(string); ok && dsn != "" {
+		resolved.DSN = dsn
+	}
+	if sslmode, ok := conn["sslmode"].(string); ok && sslmode != "" {
+		resolved.SSLMode = sslmode
+	}
+	return &resolved
+}
+
 func handleJob(ctx context.Context, client *agent.Agent, job *agent.JobResponse) agent.JobResult {
 	logger := slog.Default()
-	logger.Info("Handling job", "job_id", job.Id, "kind", job.Kind, "payload", job.Payload)
+	logger.Info("Handling job", "job_id", job.Id, "kind", job.Kind)
 
 	cfg, err := configs.LoadConfig()
 	if err != nil {
 		panic(err)
 	}
 
-	eng, err := engine.NewEngine(cfg)
+	eng, err := engine.NewEngine(resolveConnection(cfg, job.Payload))
 
 	if err != nil {
 		return agent.JobResult{
