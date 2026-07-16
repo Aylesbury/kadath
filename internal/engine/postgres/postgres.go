@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"starless/kadath/configs"
 	"starless/kadath/internal/types"
 )
@@ -35,7 +35,7 @@ func buildDSN(baseDSN, sslMode string) string {
 
 func NewEngine(cfg *configs.Config) (types.Engine, error) {
 	dsn := buildDSN(cfg.DSN, cfg.SSLMode)
-	db, err := sql.Open("postgres", dsn)
+	db, err := sql.Open("pgx", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open postgres connection: %w", err)
 	}
