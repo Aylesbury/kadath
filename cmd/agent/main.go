@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"starless/kadath/configs"
 	"starless/kadath/internal/agent"
@@ -16,6 +17,15 @@ import (
 	"starless/kadath/internal/types"
 
 	pb "starless/kadath/gen/proto"
+)
+
+// Per-job execution deadlines. Without them a single unreachable database
+// (raw TCP connect timeouts run to ~130s) stalls the whole sequential job
+// loop. Pings are kept short so the broker's synchronous connection test can
+// relay the real error instead of giving up first.
+const (
+	pingTimeout  = 15 * time.Second
+	queryTimeout = 2 * time.Minute
 )
 
 
@@ -125,6 +135,13 @@ func makeJobHandler(cfg *configs.Config) loops.JobHandler {
 	return func(ctx context.Context, client *agent.Agent, job *agent.JobResponse) agent.JobResult {
 		logger := slog.Default()
 		logger.Info("Handling job", "job_id", job.Id, "kind", job.Kind)
+
+		timeout := queryTimeout
+		if pb.JobKind(job.Kind) == pb.JobKind_JOB_KIND_PING {
+			timeout = pingTimeout
+		}
+		ctx, cancel := context.WithTimeout(ctx, timeout)
+		defer cancel()
 
 		conn := resolveConnection(cfg, job.Payload)
 		if cfg.IsAdmin() && conn.DSN == "" {
