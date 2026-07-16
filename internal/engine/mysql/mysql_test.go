@@ -1,4 +1,4 @@
-//go:build mysql
+//go:build mysql || all
 
 package mysql
 
@@ -296,4 +296,28 @@ func argsEqual(a, b []interface{}) bool {
 		return true
 	}
 	return reflect.DeepEqual(a, b)
+}
+
+func TestNormalizeDSN(t *testing.T) {
+	tests := []struct {
+		in   string
+		want string
+	}{
+		// URL form from the broker
+		{"mysql://user:pass@db.internal:3306/prod", "user:pass@tcp(db.internal:3306)/prod"},
+		{"mysql://user:pass@db.internal:3306/prod?ssl_mode=REQUIRED", "user:pass@tcp(db.internal:3306)/prod?tls=true"},
+		// native go-sql-driver form passes through untouched
+		{"user:pass@tcp(db.internal:3306)/prod", "user:pass@tcp(db.internal:3306)/prod"},
+	}
+
+	for _, tt := range tests {
+		got, err := normalizeDSN(tt.in)
+		if err != nil {
+			t.Errorf("normalizeDSN(%q) error: %v", tt.in, err)
+			continue
+		}
+		if got != tt.want {
+			t.Errorf("normalizeDSN(%q) = %q, want %q", tt.in, got, tt.want)
+		}
+	}
 }

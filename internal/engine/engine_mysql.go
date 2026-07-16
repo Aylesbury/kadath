@@ -1,13 +1,11 @@
-//go:build mysql
+//go:build mysql || all
 
 package engine
 
 import (
-	"starless/kadath/configs"
 	"starless/kadath/internal/engine/mysql"
-	"starless/kadath/internal/types"
 )
 
-func newEngine(cfg *configs.Config) (types.Engine, error) {
-	return mysql.NewEngine(cfg)
+func init() {
+	register("mysql", mysql.NewEngine)
 }

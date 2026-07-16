@@ -1,11 +1,16 @@
 lint:
 	golangci-lint run
 
+# Single-engine builds for client (connector-mode) deployments
 build-postgres:
 	go build -tags postgres -o bin/agent cmd/agent/main.go
 
 build-mysql:
 	go build -tags mysql -o bin/agent cmd/agent/main.go
+
+# All engines in one binary, for platform (admin-mode) runners
+build-all:
+	go build -tags all -o bin/agent cmd/agent/main.go
 
 # Requires:
 # go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
@@ -21,5 +26,7 @@ test-postgres:
 test-mysql:
 	go test -tags mysql -v ./tests/engine/ ./internal/engine/mysql
 
-unit-test: test-postgres test-mysql
+test-all:
+	go test -tags all ./internal/... ./configs/...
 
+unit-test: test-postgres test-mysql test-all
