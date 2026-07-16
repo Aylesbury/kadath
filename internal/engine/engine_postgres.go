@@ -1,13 +1,11 @@
-//go:build postgres
+//go:build postgres || all
 
 package engine
 
 import (
-	"starless/kadath/configs"
 	"starless/kadath/internal/engine/postgres"
-	"starless/kadath/internal/types"
 )
 
-func newEngine(cfg *configs.Config) (types.Engine, error) {
-	return postgres.NewEngine(cfg)
+func init() {
+	register("postgresql", postgres.NewEngine)
 }

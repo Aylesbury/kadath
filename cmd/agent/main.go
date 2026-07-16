@@ -115,38 +115,47 @@ func resolveConnection(cfg *configs.Config, payload map[string]interface{}) *con
 	if sslmode, ok := conn["sslmode"].(string); ok && sslmode != "" {
 		resolved.SSLMode = sslmode
 	}
+	if engineType, ok := conn["type"].(string); ok && engineType != "" {
+		resolved.EngineType = engineType
+	}
 	return &resolved
 }
 
-func handleJob(ctx context.Context, client *agent.Agent, job *agent.JobResponse) agent.JobResult {
-	logger := slog.Default()
-	logger.Info("Handling job", "job_id", job.Id, "kind", job.Kind)
+func makeJobHandler(cfg *configs.Config) loops.JobHandler {
+	return func(ctx context.Context, client *agent.Agent, job *agent.JobResponse) agent.JobResult {
+		logger := slog.Default()
+		logger.Info("Handling job", "job_id", job.Id, "kind", job.Kind)
 
-	cfg, err := configs.LoadConfig()
-	if err != nil {
-		panic(err)
-	}
-
-	eng, err := engine.NewEngine(resolveConnection(cfg, job.Payload))
-
-	if err != nil {
-		return agent.JobResult{
-			Success:      false,
-			ResultJSON:   "{}",
-			ErrorMessage: "Unable to initialize Engine",
+		conn := resolveConnection(cfg, job.Payload)
+		if cfg.IsAdmin() && conn.DSN == "" {
+			return agent.JobResult{
+				Success:      false,
+				ResultJSON:   "{}",
+				ErrorMessage: "Admin mode requires a per-job connection block, none received",
+			}
 		}
-	}
 
-	switch pb.JobKind(job.Kind) {
-	case pb.JobKind_JOB_KIND_PING:
-		return handlePing(ctx, eng)
-	case pb.JobKind_JOB_KIND_DSL_QUERY:
-		return handleDslQuery(ctx, eng, job.Payload)
-	default:
-		return agent.JobResult{
-			Success:      false,
-			ResultJSON:   "{}",
-			ErrorMessage: fmt.Sprintf("Unhandled Job Kind: %d", job.Kind),
+		eng, err := engine.NewEngine(conn)
+
+		if err != nil {
+			return agent.JobResult{
+				Success:      false,
+				ResultJSON:   "{}",
+				ErrorMessage: "Unable to initialize Engine",
+			}
+		}
+
+		switch pb.JobKind(job.Kind) {
+		case pb.JobKind_JOB_KIND_PING:
+			return handlePing(ctx, eng)
+		case pb.JobKind_JOB_KIND_DSL_QUERY:
+			return handleDslQuery(ctx, eng, job.Payload)
+		default:
+			return agent.JobResult{
+				Success:      false,
+				ResultJSON:   "{}",
+				ErrorMessage: fmt.Sprintf("Unhandled Job Kind: %d", job.Kind),
+			}
 		}
 	}
 }
@@ -161,16 +170,21 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	logger.Info("Starting agent", "connector_id", cfg.ConnectorId)
-
-	supportedKinds := []pb.JobKind{
-		pb.JobKind_JOB_KIND_PING,
-		pb.JobKind_JOB_KIND_FETCH_COLUMNS,
-		pb.JobKind_JOB_KIND_DSL_QUERY,
-		pb.JobKind_JOB_KIND_SCHEMA_REFRESH,
+	if cfg.IsAdmin() {
+		logger.Info("Starting agent in admin (platform) mode", "server", cfg.ServerAddr)
+	} else {
+		logger.Info("Starting agent in connector mode", "server", cfg.ServerAddr, "connector_id", cfg.ConnectorId)
 	}
 
-	a, err := agent.NewAgent(ctx, "localhost:9001", cfg.ConnectorId, cfg.AuthToken, supportedKinds, logger)
+	// Only advertise kinds handleJob actually implements: anything else would
+	// be claimed by the broker and immediately failed. In admin mode that
+	// would swallow e.g. schema_refresh jobs for every tenant.
+	supportedKinds := []pb.JobKind{
+		pb.JobKind_JOB_KIND_PING,
+		pb.JobKind_JOB_KIND_DSL_QUERY,
+	}
+
+	a, err := agent.NewAgent(ctx, cfg.ServerAddr, cfg.ConnectorId, cfg.AuthToken, supportedKinds, cfg.ServerTLS, logger)
 	if err != nil {
 		logger.Error("Failed to create agent", "error", err)
 		os.Exit(1)
@@ -179,7 +193,7 @@ func main() {
 	logger.Info("Agent connected, starting loops")
 
 	go loops.NewHeartBeatLoop(ctx, a)
-	loops.NewJobProcessLoop(ctx, a, handleJob)
+	loops.NewJobProcessLoop(ctx, a, makeJobHandler(cfg))
 
 	logger.Info("Agent stopped")
 }

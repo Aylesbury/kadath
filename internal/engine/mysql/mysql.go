@@ -1,4 +1,4 @@
-//go:build mysql
+//go:build mysql || all
 
 package mysql
 
@@ -6,6 +6,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net/url"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -17,8 +19,60 @@ type mysqlEngine struct {
 	db *sql.DB
 }
 
+// normalizeDSN converts URL-style DSNs (mysql://user:pass@host:3306/db, as
+// sent by the broker in per-job connection blocks) into go-sql-driver's
+// native format (user:pass@tcp(host:3306)/db). Native DSNs pass through.
+func normalizeDSN(dsn string) (string, error) {
+	if !strings.HasPrefix(dsn, "mysql://") {
+		return dsn, nil
+	}
+
+	u, err := url.Parse(dsn)
+	if err != nil {
+		return "", fmt.Errorf("invalid mysql DSN: %w", err)
+	}
+
+	user := u.User.Username()
+	pass, _ := u.User.Password()
+	db := strings.TrimPrefix(u.Path, "/")
+
+	native := fmt.Sprintf("%s:%s@tcp(%s)/%s", user, pass, u.Host, db)
+
+	if params := translateParams(u.Query()); len(params) > 0 {
+		native += "?" + params.Encode()
+	}
+
+	return native, nil
+}
+
+// translateParams maps URL-style connection parameters onto go-sql-driver
+// equivalents (the driver rejects parameters it does not know).
+func translateParams(query url.Values) url.Values {
+	params := url.Values{}
+	for key, values := range query {
+		value := values[len(values)-1]
+		switch key {
+		case "ssl_mode", "sslmode":
+			switch strings.ToUpper(value) {
+			case "REQUIRED", "REQUIRE", "TRUE":
+				params.Set("tls", "true")
+			case "DISABLED", "DISABLE", "FALSE":
+				params.Set("tls", "false")
+			}
+		default:
+			params[key] = values
+		}
+	}
+	return params
+}
+
 func NewEngine(cfg *configs.Config) (types.Engine, error) {
-	db, err := sql.Open("mysql", cfg.DSN)
+	dsn, err := normalizeDSN(cfg.DSN)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open mysql connection: %w", err)
 	}

@@ -2,11 +2,13 @@ package agent
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"log/slog"
 	"encoding/json"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 
@@ -41,9 +43,14 @@ type Agent struct {
 	supportedKinds []pb.JobKind
 }
 
-func NewAgent(ctx context.Context, serverAddr, connectorID, authToken string, supportedKinds []pb.JobKind, logger *slog.Logger) (*Agent, error) {
+func NewAgent(ctx context.Context, serverAddr, connectorID, authToken string, supportedKinds []pb.JobKind, useTLS bool, logger *slog.Logger) (*Agent, error) {
+	transport := insecure.NewCredentials()
+	if useTLS {
+		transport = credentials.NewTLS(&tls.Config{MinVersion: tls.VersionTLS12})
+	}
+
 	conn, err := grpc.DialContext(ctx, serverAddr,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(transport),
 		grpc.WithBlock(),
 	)
 	if err != nil {
